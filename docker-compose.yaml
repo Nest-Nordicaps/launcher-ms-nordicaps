@@ -1,0 +1,41 @@
+version: '3'
+
+# MODIFICAR ESTE ARCHIVO PARA AÑADIR NUEVAS MICRO-SERVICIOS
+
+services:
+
+  nats-server:
+    image: nats:latest
+    ports:
+      - "8222:8222"
+
+# =================================================
+# Client Gateway
+# =================================================
+
+  client-gateway:
+    build: ./client-gateway
+    ports:
+      - ${CLIENT_GATEWAY_PORT}:3003
+    volumes:
+      - ./client-gateway/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3003
+      - NATS_SERVERS=nats://nats-server:4222
+
+# =================================================
+# Products Microservice
+# =================================================
+
+  products-ms:
+    build: ./products-ms
+    volumes:
+      - ./products-ms/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3001
+      - NATS_SERVERS=nats://nats-server:4222
+      - DATABASE_URL=file:./dev.db
+
+
