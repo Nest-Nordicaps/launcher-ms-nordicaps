@@ -4,6 +4,3 @@
 [submodule "products-ms"]
 	path = products-ms
 	url = https://github.com/Nest-Nordicaps/products-ms-nordicaps.git
-[submodule "order-ms"]
-	path = order-ms
-	url = https://github.com/Nest-Nordicaps/order-ms.git
