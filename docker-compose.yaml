@@ -5,6 +5,7 @@ version: '3'
 services:
 
   nats-server:
+    container_name: nats_server_nc
     image: nats:latest
     ports:
       - "8222:8222"
@@ -14,6 +15,7 @@ services:
 # =================================================
 
   client-gateway:
+    container_name: client_gateway_nc
     build: ./client-gateway
     ports:
       - ${CLIENT_GATEWAY_PORT}:3003
@@ -29,6 +31,7 @@ services:
 # =================================================
 
   products-ms:
+    container_name: products_ms_nc
     build: ./products-ms
     volumes:
       - ./products-ms/src:/usr/src/app/src
@@ -39,3 +42,37 @@ services:
       - DATABASE_URL=file:./dev.db
 
 
+# =================================================
+#  Orders Microservice
+# =================================================
+
+  order-ms:
+    container_name: order_ms_nc
+    depends_on:
+      - orders-db
+    build: ./order-ms
+    volumes:
+      - ./order-ms/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3002
+      - DATABASE_URL=postgresql://postgres:654321@localhost:5432/orderdbnc?schema=public
+      - NATS_SERVERS=nats://nats-server:4222
+
+
+# =================================================
+# Orders Database
+# =================================================
+
+  orders-db:
+    container_name: order_db_nc
+    image: postgres:16.2
+    restart: always
+    volumes:
+      - ./order-ms/postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=654321
+      - POSTGRES_DB=orderdbnc
