@@ -43,3 +43,15 @@ git submodule update --remote
 Si se trabaja en el repositorio que tiene los sub-módulos, **primero actualizar y hacer push** en el sub-módulo y **después** en el repositorio principal.
 
 Si se hace al revés, se perderán las referencias de los sub-módulos en el repositorio principal y tendremos que resolver conflictos.
+
+## Hot reload
+
+Para que funcione el hot reload en docker tuve que agregar esto en el `tsconfig.json` al mismo nivel que `compilerOptions`:
+
+```json
+ "watchOptions": {
+   "watchFile": "dynamicPriorityPolling",
+   "watchDirectory": "dynamicPriorityPolling",
+   "excludeDirectories": ["**/node_modules", "dist"]
+}
+```
