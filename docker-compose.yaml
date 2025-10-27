@@ -30,16 +30,16 @@ services:
 # Products Microservice
 # =================================================
 
-  # products-ms:
-  #   container_name: products_ms_nc
-  #   build: ./products-ms
-  #   volumes:
-  #     - ./products-ms/src:/usr/src/app/src
-  #   command: npm run start:dev
-  #   environment:
-  #     - PORT=3001
-  #     - NATS_SERVERS=nats://nats-server:4222
-  #     - DATABASE_URL=file:./dev.db
+  products-ms:
+    container_name: products_ms_nc
+    build: ./products-ms
+    volumes:
+      - ./products-ms/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3001
+      - NATS_SERVERS=nats://nats-server:4222
+      - DATABASE_URL=file:./dev.db
 
 # =================================================
 #  Auth Microservice
@@ -62,33 +62,54 @@ services:
 #  Orders Microservice
 # =================================================
 
-  # order-ms:
-  #   container_name: order_ms_nc
-  #   depends_on:
-  #     - orders-db
-  #   build: ./order-ms
-  #   volumes:
-  #     - ./order-ms/src:/usr/src/app/src
-  #   command: npm run start:dev
-  #   environment:
-  #     - PORT=3002
-  #     - NATS_SERVERS=nats://nats-server:4222
-  #     - DATABASE_URL=postgresql://postgres:654321@orders-db:5432/orderdbnc?schema=public
+  order-ms:
+    container_name: order_ms_nc
+    depends_on:
+      - orders-db
+    build: ./order-ms
+    volumes:
+      - ./order-ms/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3002
+      - NATS_SERVERS=nats://nats-server:4222
+      - DATABASE_URL=postgresql://postgres:654321@orders-db:5432/orderdbnc?schema=public
 
 
 # =================================================
 # Orders Database
 # =================================================
 
-  # orders-db:
-  #   container_name: order_db_nc
-  #   image: postgres:16.2
-  #   restart: always
-  #   volumes:
-  #     - ./order-ms/postgres:/var/lib/postgresql/data
-  #   ports:
-  #     - "5432:5432"
-  #   environment:
-  #     - POSTGRES_USER=postgres
-  #     - POSTGRES_PASSWORD=654321
-  #     - POSTGRES_DB=orderdbnc
+  orders-db:
+    container_name: order_db_nc
+    image: postgres:16.2
+    restart: always
+    volumes:
+      - ./order-ms/postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=654321
+      - POSTGRES_DB=orderdbnc
+
+
+# =================================================
+# Payments Microservice
+# =================================================
+
+  payments-ms:
+    container_name: payments_ms_nc
+    build: ./payments-ms
+    volumes:
+      - ./payments-ms/src:/usr/src/app/src
+    command: npm run start:dev
+    ports:
+      - ${PAYMENTS_MS_PORT}:${PAYMENTS_MS_PORT}
+    environment:
+      - PORT=${PAYMENTS_MS_PORT}
+      - NATS_SERVERS=nats://nats-server:4222
+      - MERCADOPAGO_PUBLIC_KEY=${MERCADOPAGO_PUBLIC_KEY}
+      - MERCADOPAGO_ACCESS_TOKEN=${MERCADOPAGO_ACCESS_TOKEN}
+    # - MP_SUCCESS_URL=${STRIPE_SUCCESS_URL}
+    # - MP_CANCEL_URL=${STRIPE_CANCEL_URL}
