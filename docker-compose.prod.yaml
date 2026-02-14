@@ -1,0 +1,90 @@
+version: '3'
+
+# MODIFICAR ESTE ARCHIVO PARA AÑADIR NUEVAS MICRO-SERVICIOS
+
+services:
+
+  nats-server:
+    image: nats:latest
+
+# =================================================
+# Client Gateway
+# =================================================
+
+  client-gateway:
+    build:
+      context: ./client-gateway
+      dockerfile: dockerfile.prod
+    image:  client-gateway-prod-nc
+    ports:
+      - ${CLIENT_GATEWAY_PORT}:${CLIENT_GATEWAY_PORT}
+    environment:
+      - PORT=${CLIENT_GATEWAY_PORT}
+      - NATS_SERVERS=nats://nats-server:4222
+
+# =================================================
+# Products Microservice
+# =================================================
+
+  products-ms:
+    build: 
+      context: ./products-ms
+      dockerfile: dockerfile.prod
+    image:  products-ms-prod-nc
+    environment:
+      - PORT=3003
+      - NATS_SERVERS=nats://nats-server:4222
+      - DATABASE_URL=file:./dev.db
+
+# =================================================
+#  Auth Microservice
+# =================================================
+  
+  auth-ms:
+    build: 
+      context: ./auth-ms
+      dockerfile: dockerfile.prod
+    image: auth-ms-prod-nc
+    environment:
+      - PORT=3003
+      - NATS_SERVERS=nats://nats-server:4222
+      - DATABASE_URL=${AUTH_DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+
+
+# =================================================
+#  Orders Microservice
+# =================================================
+
+  order-ms:
+    build:
+      context: ./order-ms
+      dockerfile: dockerfile.prod
+      args: 
+        - ORDERS_DATABASE_URL=${ORDERS_DATABASE_URL}
+    image: order-ms-prod-nc
+    environment:
+      - PORT=3003
+      - DATABASE_URL=${ORDERS_DATABASE_URL}
+      - NATS_SERVERS=nats://nats-server:4222
+
+
+
+# =================================================
+# Payments Microservice
+# =================================================
+
+  payments-ms:
+    build:
+      context: ./payments-ms
+      dockerfile: dockerfile.prod
+    image: payments-ms-prod-nc
+    ports:
+      - ${PAYMENTS_MS_PORT}:${PAYMENTS_MS_PORT}
+    environment:
+      - PORT=${PAYMENTS_MS_PORT}
+      - NATS_SERVERS=nats://nats-server:4222
+      - MERCADOPAGO_PUBLIC_KEY=${MERCADOPAGO_PUBLIC_KEY}
+      - MERCADOPAGO_ACCESS_TOKEN=${MERCADOPAGO_ACCESS_TOKEN}
+    # - MP_SUCCESS_URL=${STRIPE_SUCCESS_URL}
+    # - MP_CANCEL_URL=${STRIPE_CANCEL_URL}
